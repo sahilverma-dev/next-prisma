@@ -30,6 +30,7 @@ const Page = () => {
         const data = await res.json();
         if (data?.success) {
           router.push(origin ? `/${origin}` : "/");
+          localStorage.setItem("user", JSON.stringify(data?.user));
 
           toast({
             title: "Login Successful",

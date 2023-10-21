@@ -1,16 +1,17 @@
 import { db } from "@/prisma/config";
 
-export const GET = async () => {
+export const POST = async (req: Request) => {
+  const { email } = await req.json();
+
   try {
-    const data = await db.post.findMany({
-      include: {
-        author: true,
+    const data = await db.user.findFirst({
+      where: {
+        email,
       },
     });
 
     return Response.json({
-      total: data?.length || 0,
-      posts: data.reverse(),
+      ...data,
     });
   } catch (error) {
     console.log(error);

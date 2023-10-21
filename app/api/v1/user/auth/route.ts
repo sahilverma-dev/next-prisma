@@ -1,11 +1,5 @@
 import { db } from "@/prisma/config";
 
-export const GET = () => {
-  return Response.json({
-    hello: "hello",
-  });
-};
-
 export const POST = async (req: Request) => {
   const body = await req.json();
 

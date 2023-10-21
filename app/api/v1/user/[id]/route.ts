@@ -1,16 +1,19 @@
 import { db } from "@/prisma/config";
 
-export const GET = async () => {
+export async function GET(_: Request, { params }: { params: { id: string } }) {
+  const id = params.id;
   try {
-    const data = await db.post.findMany({
+    const data = await db.user.findFirst({
+      where: {
+        id,
+      },
       include: {
-        author: true,
+        posts: true,
       },
     });
 
     return Response.json({
-      total: data?.length || 0,
-      posts: data.reverse(),
+      ...data,
     });
   } catch (error) {
     console.log(error);
@@ -25,4 +28,4 @@ export const GET = async () => {
       }
     );
   }
-};
+}

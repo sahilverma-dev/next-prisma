@@ -1,3 +1,4 @@
+import Header from "@/components/custom/header";
 import PostCard from "@/components/custom/post-card";
 import { buttonVariants } from "@/components/ui/button";
 import { Post } from "@/interfaces";
@@ -19,8 +20,10 @@ const Post = async ({ params }: any) => {
   const post = await getPost(id as string);
 
   return (
-    <div className="w-full p-4">
-      <div className="w-full max-w-3xl mx-auto ">
+    <div className="w-full">
+      <Header />
+
+      <div className="w-full max-w-3xl mx-auto p-4">
         <Link
           href={"/"}
           className={buttonVariants({ variant: "default", className: "mb-4" })}

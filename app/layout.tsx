@@ -4,6 +4,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/toaster";
 import TanstackQueryProvider from "@/components/providers/tanstack-query-provider";
+import { AuthProvider } from "@/components/providers/auth-providers";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -19,7 +20,9 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body>
-          <TanstackQueryProvider>{children}</TanstackQueryProvider>
+          <TanstackQueryProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </TanstackQueryProvider>
           <Toaster />
         </body>
       </html>

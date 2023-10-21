@@ -1,38 +1,65 @@
 import Header from "@/components/custom/header";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Post } from "@/interfaces";
+import { User } from "@/interfaces";
+
 import Link from "next/link";
 
-const getPosts = async (): Promise<Post[]> => {
-  const response = await fetch("http://localhost:3000/api/v1/post/get", {
+const getUser = async (id: string) => {
+  const response = await fetch(`http://localhost:3000/api/v1/user/${id}`, {
     cache: "no-cache",
   });
   if (!response.ok) {
     throw new Error("Failed to fetch data");
   }
   const data: any = await response.json();
-  return data?.posts as Post[];
+  return data as User;
 };
 
-const Home = async () => {
-  const posts = await getPosts();
-
+const UserPage = async ({ params }: any) => {
+  const { id } = params;
+  const user = await getUser(id as string);
   return (
-    <div className="w-full ">
+    <div className="w-full">
       <Header />
-      <div className="w-full mt-4 max-w-3xl mx-auto">
+
+      <div className="w-full max-w-3xl mx-auto p-4">
+        <Card>
+          <CardContent className="grid gap-6 pt-6">
+            <div className="flex items-center justify-between space-x-4">
+              <div className="flex items-center space-x-4">
+                <Avatar>
+                  <AvatarImage
+                    src={user.avatarImage}
+                    className="object-cover"
+                  />
+                </Avatar>
+                <div>
+                  <p className="text-sm font-medium leading-none">
+                    {user.name}
+                  </p>
+                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                </div>
+              </div>
+              <p className={buttonVariants({ variant: "outline" })}>
+                {user.posts.length} Posts
+              </p>
+            </div>
+          </CardContent>
+        </Card>
         <div className="flex w-full items-center justify-between">
-          <h1 className="text-xl font-bold mb-4">Posts</h1>
+          <h1 className="text-xl font-bold my-4">Posts</h1>
         </div>
         <div className="w-full flex flex-col gap-4">
-          {posts?.map((post) => (
+          {user.posts?.map((post) => (
             <Card key={post.id}>
               <CardHeader>
                 <CardTitle>
@@ -56,10 +83,11 @@ const Home = async () => {
               <CardFooter className="inline-flex items-center gap-2">
                 <b>Author:</b>
                 <Link
-                  href={`/user/${post.author.id}`}
+                  href={`/user/${user.id}`}
+                  target="_blank"
                   className="text-blue-500 "
                 >
-                  {post?.author?.name}
+                  {user?.name}
                 </Link>
               </CardFooter>
             </Card>
@@ -70,4 +98,4 @@ const Home = async () => {
   );
 };
 
-export default Home;
+export default UserPage;

@@ -1,7 +1,7 @@
 "use client";
 
 import { Post } from "@/interfaces";
-import { FC, FormEvent, useState } from "react";
+import { FC, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -31,13 +31,13 @@ import { useForm } from "react-hook-form";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "../ui/form";
 import { Input } from "../ui/input";
+import { useAuth } from "../providers/auth-providers";
 
 interface Props {
   post: Post;
@@ -46,6 +46,8 @@ interface Props {
 const PostCard: FC<Props> = ({ post }) => {
   const { toast } = useToast();
   const router = useRouter();
+
+  const { user } = useAuth();
 
   const formSchema = z.object({
     title: z
@@ -80,7 +82,7 @@ const PostCard: FC<Props> = ({ post }) => {
         title,
         body,
       });
-      const response = await fetch(`http://localhost:3000/api/v1/post/${id}`, {
+      const response = await fetch(`/api/v1/post/${id}`, {
         method: "PATCH",
         body: payload,
       });
@@ -94,53 +96,26 @@ const PostCard: FC<Props> = ({ post }) => {
     }
   };
 
-  //   const formMutation = useMutation(
-  //     () => {
-  //       const { title, body } = form.getValues();
-
-  //       return updatePost({
-  //         id: post.id as string,
-  //         title,
-  //         body,
-  //       });
-  //     },
-  //     {
-  //       onSuccess: () => {
-  //         toast({
-  //           title: "Thanks for contacting",
-  //         });
-  //       },
-  //       onError: (err: any) => {
-  //         console.log(err);
-  //         toast({
-  //           title: "Something went wrong",
-  //           variant: "destructive",
-  //         });
-  //       },
-  //     }
-  //   );
-
-  // const formMutation = useMutation(
-  //     {
-  //      mutationFn:()=>{
-
-  //      }
-  //     }
-  // )
+  const updatedMutation = useMutation({
+    mutationFn: () =>
+      updatePost({
+        body: form.getValues().body,
+        title: form.getValues().title,
+        id: post.id,
+      }),
+    onSuccess: () => {
+      window.location.reload();
+    },
+  });
 
   const onSubmit = () => {
     // e.preventDefault();
-    console.log(form.getValues());
-    updatePost({
-      body: form.getValues().body,
-      title: form.getValues().title,
-      id: post.id,
-    });
+    updatedMutation?.mutate();
   };
 
   const deletePost = async () => {
     try {
-      await fetch(`http://localhost:3000/api/v1/post/${post.id}`, {
+      await fetch(`/api/v1/post/${post.id}`, {
         method: "DELETE",
       });
       setShowDeleteModal(false);
@@ -157,26 +132,34 @@ const PostCard: FC<Props> = ({ post }) => {
     }
   };
 
+  const deleteMutation = useMutation({
+    mutationFn: deletePost,
+  });
+
   return (
     <>
       <Card>
         <CardHeader>
           <div className="flex w-full items-center justify-between">
             <CardTitle>{post.title}</CardTitle>
-            <div className="flex gap-3 items-center">
-              <Button
-                variant={"default"}
-                onClick={() => setShowEditModal(true)}
-              >
-                Update
-              </Button>
-              <Button
-                variant={"destructive"}
-                onClick={() => setShowDeleteModal(true)}
-              >
-                Delete
-              </Button>
-            </div>
+            {post.author.id === user?.id && (
+              <div className="flex gap-3 items-center">
+                <Button
+                  variant={"default"}
+                  disabled={deleteMutation.isPending}
+                  onClick={() => setShowEditModal(true)}
+                >
+                  {deleteMutation.isPaused ? "Loading..." : "Update"}
+                </Button>
+                <Button
+                  variant={"destructive"}
+                  disabled={deleteMutation.isPending}
+                  onClick={() => setShowDeleteModal(true)}
+                >
+                  {deleteMutation.isPaused ? "Loading..." : "Delete"}
+                </Button>
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -184,11 +167,7 @@ const PostCard: FC<Props> = ({ post }) => {
         </CardContent>
         <CardFooter className="inline-flex items-center gap-2">
           <b>Author:</b>
-          <Link
-            href={`/author/${post.author.id}`}
-            target="_blank"
-            className="text-blue-500 "
-          >
+          <Link href={`/user/${post.author.id}`} className="text-blue-500 ">
             {post?.author?.name}
           </Link>
         </CardFooter>
@@ -233,12 +212,8 @@ const PostCard: FC<Props> = ({ post }) => {
                   )}
                 />
                 <div className="flex w-full justify-end pt-4 items-center gap-2">
-                  <Button type="submit">Update</Button>
-                  <Button
-                    variant={"destructive"}
-                    onClick={() => setShowEditModal(false)}
-                  >
-                    Cancel
+                  <Button type="submit" disabled={updatedMutation?.isPending}>
+                    {updatedMutation?.isPending ? "Loading..." : "Update"}
                   </Button>
                 </div>
               </form>
@@ -255,10 +230,19 @@ const PostCard: FC<Props> = ({ post }) => {
               account and remove your data from our servers.
             </DialogDescription>
             <div className="flex w-full justify-end pt-4 items-center gap-2">
-              <Button variant={"destructive"} onClick={deletePost}>
+              <Button
+                variant={"destructive"}
+                disabled={deleteMutation.isPending}
+                onClick={() => deleteMutation.mutate()}
+              >
                 Delete
               </Button>
-              <Button onClick={() => setShowDeleteModal(false)}>Cancel</Button>
+              <Button
+                disabled={deleteMutation.isPending}
+                onClick={() => setShowDeleteModal(false)}
+              >
+                Cancel
+              </Button>
             </div>
           </DialogHeader>
         </DialogContent>
