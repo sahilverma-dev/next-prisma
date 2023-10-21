@@ -14,9 +14,12 @@ import { User } from "@/interfaces";
 import Link from "next/link";
 
 const getUser = async (id: string) => {
-  const response = await fetch(`http://localhost:3000/api/v1/user/${id}`, {
-    cache: "no-cache",
-  });
+  const response = await fetch(
+    `https://next-prisma-khaki.vercel.app/v1/user/${id}`,
+    {
+      cache: "no-cache",
+    }
+  );
   if (!response.ok) {
     throw new Error("Failed to fetch data");
   }

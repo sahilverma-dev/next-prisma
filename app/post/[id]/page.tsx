@@ -5,9 +5,12 @@ import { Post } from "@/interfaces";
 import Link from "next/link";
 
 const getPost = async (id: string): Promise<Post> => {
-  const response = await fetch(`http://localhost:3000/api/v1/post/${id}`, {
-    cache: "no-cache",
-  });
+  const response = await fetch(
+    `https://next-prisma-khaki.vercel.app/api/v1/post/${id}`,
+    {
+      cache: "no-cache",
+    }
+  );
   if (!response.ok) {
     throw new Error("Failed to fetch data");
   }
